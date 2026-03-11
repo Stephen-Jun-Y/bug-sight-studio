@@ -1,4 +1,5 @@
-import { MapPin } from "lucide-react";
+import { MapPin, SlidersHorizontal } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import MobileLayout from "@/components/MobileLayout";
 import PageHeader from "@/components/PageHeader";
 
@@ -11,10 +12,20 @@ const pins = [
 ];
 
 const ObservationMapPage = () => {
+  const navigate = useNavigate();
+
   return (
     <MobileLayout>
       <div className="h-full bg-background relative">
-        <PageHeader title="观察地图" transparent />
+        <PageHeader
+          title="观察地图"
+          transparent
+          rightAction={
+            <button className="btn-tap min-w-[44px] min-h-[44px] flex items-center justify-center">
+              <SlidersHorizontal size={20} className="text-foreground" />
+            </button>
+          }
+        />
         {/* Simulated map */}
         <div className="absolute inset-0 pt-24 bg-secondary">
           <div className="relative w-full h-full" style={{ background: "linear-gradient(135deg, hsl(142 30% 90%), hsl(200 20% 88%), hsl(142 20% 85%))" }}>
