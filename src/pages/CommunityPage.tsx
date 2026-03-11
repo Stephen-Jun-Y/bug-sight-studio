@@ -4,6 +4,8 @@ import { motion } from "framer-motion";
 import { Heart, MessageCircle, Share2, Plus } from "lucide-react";
 import MobileLayout from "@/components/MobileLayout";
 import TabBar from "@/components/TabBar";
+import ShareSheet from "@/components/ShareSheet";
+import LikeButton from "@/components/LikeButton";
 import insectButterfly from "@/assets/insect-butterfly.jpg";
 import insectMantis from "@/assets/insect-mantis.jpg";
 import insectBee from "@/assets/insect-bee.jpg";
@@ -45,6 +47,7 @@ const posts = [
 const CommunityPage = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState(0);
+  const [shareOpen, setShareOpen] = useState(false);
 
   return (
     <MobileLayout>
@@ -94,17 +97,19 @@ const CommunityPage = () => {
                 <img src={post.img} alt="" className="w-full h-48 object-cover mt-3" />
               </button>
               {/* Actions */}
-              <div className="flex items-center justify-around px-4 py-3">
-                {[
-                  { icon: Heart, count: post.likes },
-                  { icon: MessageCircle, count: post.comments },
-                  { icon: Share2, count: post.shares },
-                ].map(({ icon: Icon, count }, ai) => (
-                  <button key={ai} className="flex items-center gap-1.5 text-muted-foreground btn-tap min-w-[44px] min-h-[44px] justify-center">
-                    <Icon size={18} />
-                    <span className="text-small">{count}</span>
-                  </button>
-                ))}
+              <div className="flex items-center justify-around px-4 py-1">
+                <LikeButton initialCount={post.likes} />
+                <button className="flex items-center gap-1.5 text-muted-foreground btn-tap min-w-[44px] min-h-[44px] justify-center">
+                  <MessageCircle size={18} />
+                  <span className="text-small">{post.comments}</span>
+                </button>
+                <button
+                  onClick={() => setShareOpen(true)}
+                  className="flex items-center gap-1.5 text-muted-foreground btn-tap min-w-[44px] min-h-[44px] justify-center"
+                >
+                  <Share2 size={18} />
+                  <span className="text-small">{post.shares}</span>
+                </button>
               </div>
             </motion.div>
           ))}
@@ -117,6 +122,8 @@ const CommunityPage = () => {
         >
           <Plus size={24} className="text-primary-foreground" />
         </button>
+
+        <ShareSheet open={shareOpen} onClose={() => setShareOpen(false)} />
       </div>
       <TabBar />
     </MobileLayout>

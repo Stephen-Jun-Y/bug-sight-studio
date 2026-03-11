@@ -1,37 +1,39 @@
+import { useNavigate } from "react-router-dom";
 import { ChevronRight } from "lucide-react";
 import { useState } from "react";
 import MobileLayout from "@/components/MobileLayout";
 import PageHeader from "@/components/PageHeader";
 
 const SettingsPage = () => {
+  const navigate = useNavigate();
   const [notifications, setNotifications] = useState(true);
 
   const groups = [
     {
       title: "账号安全",
       items: [
-        { label: "修改密码", action: "nav" },
-        { label: "绑定手机", value: "138****1234", action: "nav" },
+        { label: "修改密码", action: "nav" as const, path: "/change-password" },
+        { label: "绑定手机", value: "138****1234", action: "nav" as const, path: "/bind-phone" },
       ],
     },
     {
       title: "通知设置",
       items: [
-        { label: "推送通知", action: "toggle", checked: notifications, onChange: () => setNotifications(!notifications) },
+        { label: "推送通知", action: "toggle" as const, checked: notifications, onChange: () => setNotifications(!notifications) },
       ],
     },
     {
       title: "隐私设置",
       items: [
-        { label: "隐私政策", action: "nav" },
-        { label: "数据导出", action: "nav" },
+        { label: "隐私政策", action: "nav" as const, path: "/privacy-policy" },
+        { label: "数据导出", action: "nav" as const, path: "/data-export" },
       ],
     },
     {
       title: "关于",
       items: [
-        { label: "版本号", value: "v2.1.0", action: "none" },
-        { label: "用户协议", action: "nav" },
+        { label: "版本号", value: "v2.1.0", action: "none" as const },
+        { label: "用户协议", action: "nav" as const, path: "/user-agreement" },
       ],
     },
   ];
@@ -45,7 +47,11 @@ const SettingsPage = () => {
             <p className="text-small text-muted-foreground mb-2 uppercase tracking-wider">{group.title}</p>
             <div className="bg-card rounded-xl card-shadow micro-border overflow-hidden">
               {group.items.map((item, i) => (
-                <div key={i} className="flex items-center justify-between px-4 py-3.5 border-b border-border last:border-0">
+                <div
+                  key={i}
+                  onClick={() => item.action === "nav" && item.path && navigate(item.path)}
+                  className={`flex items-center justify-between px-4 py-3.5 border-b border-border last:border-0 ${item.action === "nav" ? "cursor-pointer tap-scale" : ""}`}
+                >
                   <span className="text-body text-foreground">{item.label}</span>
                   {item.action === "nav" && (
                     <div className="flex items-center gap-1">
