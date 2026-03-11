@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Settings, ChevronRight, Heart, Award, MapPin, HelpCircle, Edit3 } from "lucide-react";
 import MobileLayout from "@/components/MobileLayout";
 import TabBar from "@/components/TabBar";
+import { getStoredNickname } from "@/lib/auth";
 
 const stats = [
   { value: "128", label: "物种" },
@@ -24,6 +25,7 @@ const menuGroups = [
 
 const ProfilePage = () => {
   const navigate = useNavigate();
+  const nickname = getStoredNickname() || "自然探索者";
 
   return (
     <MobileLayout>
@@ -42,7 +44,7 @@ const ProfilePage = () => {
             <div className="w-20 h-20 rounded-full mx-auto bg-secondary border-[3px] border-primary overflow-hidden">
               <div className="w-full h-full bg-primary/20 flex items-center justify-center text-[36px]">🦋</div>
             </div>
-            <h2 className="text-[20px] font-bold text-foreground mt-3">自然探索者</h2>
+            <h2 className="text-[20px] font-bold text-foreground mt-3">{nickname}</h2>
             <p className="text-caption text-tertiary-40 mt-1">已识别 128 种昆虫</p>
             <button
               onClick={() => navigate("/edit-profile")}

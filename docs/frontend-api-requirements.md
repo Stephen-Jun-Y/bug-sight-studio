@@ -1,243 +1,100 @@
-# 前端 API 需求清单（基于现有代码扫描）
+# BugSight 前端联调对接说明（可直接执行）
 
-## 1) 项目扫描结论
-
-### 1.1 API 调用位置扫描
-- 当前前端代码中**未发现真实网络请求实现**（未使用 `fetch` / `axios` / `react-query` 的 query/mutation 调用）。
-- 业务页面主要采用本地 `useState` 与硬编码数组模拟数据流。
-- 结论：后端重构与联调前，需先新增 API client 层（建议 `src/services` + `src/types` + `src/hooks/api`）。
-
-### 1.2 数据类型定义扫描
-- 当前仅有少量 UI 组件级 TypeScript 类型（例如按钮 props、页面局部 `type`），缺少统一业务实体类型（如 User、Post、RecognitionRecord、Species）。
-- 结论：建议先补齐共享类型定义，以降低后续联调返工。
-
-### 1.3 核心功能模块识别
-- 认证与账号安全：登录/注册、修改密码、绑定手机、退出登录、注销账号。
-- 昆虫识别主链路：拍照/预览/识别结果、相似物种、百科详情、收藏/分享/纠错。
-- 搜索与知识库：关键词搜索、筛选条件、物种详情。
-- 历史记录：列表、详情、编辑、删除、导出。
-- 社区互动：动态流、发布、点赞、评论、分享、关注、用户主页。
-- 个人中心：个人信息、收藏、成就、观察地图、通知、设置。
-
----
-
-## 2) API 需求清单（按模块）
-
-> 说明：以下端点为联调建议草案，采用 REST 风格；可按你后端规范改为 `/v1/...`、`/api/...` 或 GraphQL。
-
-## 2.1 认证与用户
-
-### A. 登录
-- **Endpoint**: `POST /auth/login`
-- **请求**
+## 1. 后端环境
+- Base URL：`http://124.221.209.129:8080/api/v1`
+- 健康检查：`GET /health`
+- 统一响应：
 ```json
-{ "email": "user@example.com", "password": "string" }
+{ "code": 0, "message": "ok", "data": {} }
 ```
-- **响应**
-```json
-{ "accessToken": "jwt", "refreshToken": "jwt", "user": { "id": "u_1", "nickname": "自然探索者" } }
+> 前端必须从 `data` 读取业务字段。
+
+## 2. 前端环境变量
+在 `.env` 中配置：
+```bash
+VITE_API_BASE=http://124.221.209.129:8080/api/v1
 ```
 
-### B. 注册
-- **Endpoint**: `POST /auth/register`
-- **请求**
-```json
-{ "nickname": "string", "email": "user@example.com", "password": "string", "agreePolicy": true }
-```
-- **响应**
-```json
-{ "accessToken": "jwt", "refreshToken": "jwt", "user": { "id": "u_1", "nickname": "自然探索者" } }
-```
+## 3. 登录/注册（重点）
 
-### C. 获取当前用户信息
-- **Endpoint**: `GET /users/me`
-- **响应**
-```json
-{ "id": "u_1", "nickname": "自然探索者", "bio": "...", "avatarUrl": "...", "location": "北京" }
-```
-
-### D. 更新个人资料
-- **Endpoint**: `PATCH /users/me`
-- **请求**
-```json
-{ "nickname": "string", "bio": "string", "location": "string", "avatarUrl": "string" }
-```
-- **响应**：更新后的用户对象
-
-### E. 修改密码
-- **Endpoint**: `POST /users/me/password`
-- **请求**
-```json
-{ "currentPassword": "string", "newPassword": "string" }
-```
-- **响应**
-```json
-{ "success": true }
-```
-
-### F. 手机绑定相关
-- **发送验证码**: `POST /users/me/phone/verification-code`
-- **确认绑定**: `POST /users/me/phone/bind`
-- **换绑**: `POST /users/me/phone/change`
-- **解绑**: `POST /users/me/phone/unbind`
-
-### G. 注销账号 / 退出登录
-- **退出登录**: `POST /auth/logout`
-- **注销账号**: `DELETE /users/me`
-
----
-
-## 2.2 识别与记录
-
-### A. 上传识别图片
-- **Endpoint**: `POST /recognitions`
-- **请求**: `multipart/form-data`
-  - `image`: file
-  - `location`(可选), `capturedAt`(可选)
-- **响应**
+### 注册
+- `POST /auth/register`
 ```json
 {
-  "recognitionId": "rec_1",
-  "species": { "id": "sp_1", "name": "中华螳螂", "latinName": "Tenodera sinensis" },
-  "confidence": 0.947,
-  "similar": [{ "speciesId": "sp_2", "name": "大刀螳螂", "score": 0.783 }]
+  "nickname": "自然探索者",
+  "email": "user@example.com",
+  "password": "12345678",
+  "agreePolicy": true
 }
 ```
 
-### B. 获取识别详情
-- **Endpoint**: `GET /recognitions/{recognitionId}`
-- **响应**：识别结果、百科摘要、可操作状态（是否已收藏等）
-
-### C. 识别记录列表
-- **Endpoint**: `GET /recognitions`
-- **Query**: `page`, `pageSize`, `dateFrom`, `dateTo`, `keyword`
-
-### D. 识别记录详情
-- **Endpoint**: `GET /recognitions/{recognitionId}`
-
-### E. 编辑记录
-- **Endpoint**: `PATCH /recognitions/{recognitionId}`
-- **请求**
+### 登录
+- `POST /auth/login`
 ```json
-{ "note": "string", "location": "string", "capturedAt": "2024-03-10T14:32:00+08:00" }
+{
+  "email": "user@example.com",
+  "password": "12345678"
+}
 ```
 
-### F. 删除记录
-- **Endpoint**: `DELETE /recognitions/{recognitionId}`
-
-### G. 记录导出
-- **创建导出任务**: `POST /exports`
-- **查询任务进度**: `GET /exports/{exportId}`
-- **下载**: `GET /exports/{exportId}/download`
-
----
-
-## 2.3 物种搜索与百科
-
-### A. 热门搜索词
-- **Endpoint**: `GET /search/hot-tags`
-
-### B. 搜索历史
-- **获取**: `GET /search/history`
-- **新增**: `POST /search/history`
-- **清空**: `DELETE /search/history`
-
-### C. 物种搜索
-- **Endpoint**: `GET /species/search`
-- **Query**: `q`, `order`, `type[]`, `region[]`, `protectionLevel[]`, `sizeMin`, `sizeMax`, `page`, `pageSize`
-
-### D. 物种详情（百科）
-- **Endpoint**: `GET /species/{speciesId}`
-
-### E. 相似物种
-- **Endpoint**: `GET /species/{speciesId}/similar`
-
-### F. 识别纠错/报告
-- **Endpoint**: `POST /recognitions/{recognitionId}/reports`
-- **请求**
+### 登录/注册响应（`data` 内）
 ```json
-{ "reason": "misidentified", "comment": "string" }
+{
+  "accessToken": "...",
+  "refreshToken": "...",
+  "token": "...",
+  "userId": 1,
+  "nickname": "...",
+  "avatarUrl": "",
+  "user": {
+    "id": 1,
+    "nickname": "...",
+    "avatarUrl": ""
+  }
+}
 ```
 
----
+约定：
+- 前端统一使用 `accessToken`（`token` 为兼容字段）。
+- 后续接口统一带 `Authorization: Bearer <accessToken>`。
 
-## 2.4 收藏、点赞、分享
+## 4. 用户中心接口
+- `GET /users/me`
+- `PATCH /users/me`
+- `POST /users/me/password`
+- `DELETE /users/me`
 
-### A. 收藏物种/记录
-- **添加收藏**: `POST /favorites`
-- **取消收藏**: `DELETE /favorites/{favoriteId}`
-- **收藏列表**: `GET /favorites`
+## 5. 核心业务接口
+- 识别：`POST /recognitions`、`GET /recognitions`、`GET/PATCH/DELETE /recognitions/{id}`
+- 物种：`GET /species/search`、`GET /species/{id}`、`GET /species/{id}/similar`
+- 收藏：`GET /favorites`、`POST/DELETE /favorites/{insectId}`、`POST /favorites/{insectId}/toggle`、`GET /favorites/{insectId}/status`
+- 社区：`GET /posts`、`GET /posts/{id}/comments`、`POST /posts/{id}/comments`
 
-### B. 点赞（动态 / 评论）
-- **点赞**: `POST /likes`
-- **取消点赞**: `DELETE /likes/{likeId}`
-
-### C. 分享追踪（可选）
-- **Endpoint**: `POST /shares`
-- 用于统计分享次数而不是执行真实分享动作。
-
----
-
-## 2.5 社区与互动
-
-### A. 动态流
-- **Endpoint**: `GET /posts`
-- **Query**: `tab=recommend|following|latest`, `page`, `pageSize`
-
-### B. 发布动态
-- **Endpoint**: `POST /posts`
-- **请求**（multipart 或 JSON）
+## 6. 分页规范
+- 请求：`page + pageSize`（兼容 `size`）
+- 响应（在 `data` 内）：
 ```json
-{ "content": "string", "media": ["url"], "topics": ["昆虫"], "location": "北京", "privacy": "public" }
+{ "list": [], "total": 0, "page": 1, "size": 20 }
 ```
 
-### C. 动态详情
-- **Endpoint**: `GET /posts/{postId}`
+## 7. 本次已完成前端改造（对应 7 项）
+1. API client 使用 `VITE_API_BASE`。
+2. 请求自动注入 `Authorization`。
+3. 登录/注册后持久化 `data.accessToken`（兼容 `data.token`）。
+4. 响应统一从 `res.data`（即 envelope 的 `data`）读取业务值。
+5. 提供统一分页参数工具：`page/pageSize`。
+6. 注册请求使用 `nickname + agreePolicy`。
+7. 页面昵称读取优先 `nickname`（从登录态本地缓存读取）。
 
-### D. 评论
-- **获取评论**: `GET /posts/{postId}/comments`
-- **新增评论**: `POST /posts/{postId}/comments`
-- **回复评论**: `POST /comments/{commentId}/replies`
+## 8. 暂未覆盖接口（先 mock）
+- `/users/me/phone/*`
+- `/exports/*`
+- `/search/hot-tags`、`/search/history`
+- `/notifications*`
+- `/likes`、`/follows`
 
-### E. 关注系统
-- **关注用户**: `POST /follows`
-- **取消关注**: `DELETE /follows/{followId}`
-- **用户资料页**: `GET /users/{userId}`
-
-### F. 通知
-- **通知列表**: `GET /notifications?tab=all|interaction|system`
-- **标记已读**: `POST /notifications/read`
-
----
-
-## 2.6 设置与偏好
-
-### A. 通知开关
-- **获取设置**: `GET /users/me/settings`
-- **更新设置**: `PATCH /users/me/settings`
-
-### B. 清除缓存（服务端可选）
-- 若缓存仅本地，可前端直接做；若有云端缓存可提供：`POST /users/me/cache/clear`
-
----
-
-## 3) 前端已实现但后端高概率缺失的能力（联调风险清单）
-
-1. **完整识别链路 API 缺失**：当前扫描页与结果页是纯前端模拟进度与静态结果，尚未对接上传识别与结果查询。
-2. **社区写操作缺失**：点赞、评论、发布、关注目前都在本地状态模拟。
-3. **账号安全操作缺失**：修改密码、绑定/换绑/解绑手机号按钮已存在但未调用后端。
-4. **搜索与筛选能力缺失**：热门词、搜索历史、复杂筛选尚无后端接口。
-5. **导出流程缺失**：导出任务进度与下载当前为前端动画，需后端异步任务支持。
-6. **通知中心缺失**：消息列表/已读状态仅静态数据，缺少真实未读计数与分类接口。
-7. **统一类型与错误码契约缺失**：目前没有前后端共享 schema，建议尽快制定 OpenAPI 或 Zod 合约。
-
----
-
-## 4) 建议的最小联调优先级（MVP）
-
-1. `auth/login`, `auth/register`, `users/me`
-2. `POST /recognitions`, `GET /recognitions`, `GET /recognitions/{id}`
-3. `GET /species/search`, `GET /species/{id}`, `GET /species/{id}/similar`
-4. `GET /posts`, `POST /posts`, `POST /posts/{id}/comments`, `POST /likes`
-5. `GET /notifications`, `PATCH /users/me/settings`
-
+## 9. 联调执行顺序建议
+1) 先用 `/health` + `/auth/login` 验证网络与 token 存储。  
+2) 接入 `/users/me` 并回填个人信息。  
+3) 接入识别列表 `/recognitions`（分页）再接详情与编辑。  
+4) 接入物种检索 `/species/search`，最后接社区评论。
