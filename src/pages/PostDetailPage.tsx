@@ -1,6 +1,10 @@
+import { useState } from "react";
 import { Heart, MessageCircle, Share2, Send } from "lucide-react";
+import { motion } from "framer-motion";
 import MobileLayout from "@/components/MobileLayout";
 import PageHeader from "@/components/PageHeader";
+import LikeButton from "@/components/LikeButton";
+import ShareSheet from "@/components/ShareSheet";
 import insectButterfly from "@/assets/insect-butterfly.jpg";
 
 const comments = [
@@ -10,6 +14,22 @@ const comments = [
 ];
 
 const PostDetailPage = () => {
+  const [shareOpen, setShareOpen] = useState(false);
+  const [commentText, setCommentText] = useState("");
+  const [localComments, setLocalComments] = useState(comments);
+
+  const handleSend = () => {
+    if (!commentText.trim()) return;
+    setLocalComments(prev => [...prev, {
+      avatar: "🦋",
+      name: "我",
+      time: "刚刚",
+      text: commentText,
+      likes: 0,
+    }]);
+    setCommentText("");
+  };
+
   return (
     <MobileLayout>
       <div className="h-full bg-background pb-20 overflow-y-auto hide-scrollbar relative">
@@ -41,23 +61,28 @@ const PostDetailPage = () => {
         </div>
 
         {/* Actions */}
-        <div className="flex items-center justify-around px-5 py-2 border-b border-border">
-          {[
-            { icon: Heart, label: "点赞" },
-            { icon: MessageCircle, label: "评论" },
-            { icon: Share2, label: "分享" },
-          ].map(({ icon: Icon, label }, i) => (
-            <button key={i} className="flex items-center gap-1.5 text-muted-foreground btn-tap py-2">
-              <Icon size={20} />
-              <span className="text-caption">{label}</span>
-            </button>
-          ))}
+        <div className="flex items-center justify-around px-5 py-1 border-b border-border">
+          <LikeButton initialCount={128} />
+          <button className="flex items-center gap-1.5 text-muted-foreground btn-tap py-2">
+            <MessageCircle size={20} />
+            <span className="text-caption">评论</span>
+          </button>
+          <button onClick={() => setShareOpen(true)} className="flex items-center gap-1.5 text-muted-foreground btn-tap py-2">
+            <Share2 size={20} />
+            <span className="text-caption">分享</span>
+          </button>
         </div>
 
         {/* Comments */}
         <div className="px-5 mt-3 space-y-4">
-          {comments.map((c, i) => (
-            <div key={i} className="flex gap-3">
+          {localComments.map((c, i) => (
+            <motion.div
+              key={i}
+              initial={i >= comments.length ? { opacity: 0, x: 20 } : false}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.2 }}
+              className="flex gap-3"
+            >
               <div className="w-8 h-8 bg-secondary rounded-full flex items-center justify-center text-[16px] flex-shrink-0">{c.avatar}</div>
               <div className="flex-1">
                 <div className="flex items-center gap-2">
@@ -66,21 +91,33 @@ const PostDetailPage = () => {
                 </div>
                 <p className="text-caption text-foreground mt-0.5">{c.text}</p>
                 <div className="flex items-center gap-3 mt-1">
-                  <button className="text-[11px] text-muted-foreground flex items-center gap-1"><Heart size={12} /> {c.likes}</button>
+                  <LikeButton initialCount={c.likes} size={12} showCount />
                   <button className="text-[11px] text-muted-foreground">回复</button>
                 </div>
               </div>
-            </div>
+            </motion.div>
           ))}
         </div>
 
         {/* Input */}
         <div className="absolute bottom-0 left-0 right-0 glass px-5 py-3 pb-8 flex items-center gap-3">
-          <input placeholder="写评论..." className="flex-1 h-[40px] bg-secondary rounded-full px-4 text-caption text-foreground placeholder:text-muted-foreground outline-none" />
-          <button className="w-10 h-10 bg-primary rounded-full flex items-center justify-center btn-tap">
+          <input
+            value={commentText}
+            onChange={e => setCommentText(e.target.value)}
+            onKeyDown={e => e.key === "Enter" && handleSend()}
+            placeholder="写评论..."
+            className="flex-1 h-[40px] bg-secondary rounded-full px-4 text-caption text-foreground placeholder:text-muted-foreground outline-none"
+          />
+          <button
+            onClick={handleSend}
+            disabled={!commentText.trim()}
+            className="w-10 h-10 bg-primary rounded-full flex items-center justify-center btn-tap disabled:opacity-40"
+          >
             <Send size={16} className="text-primary-foreground" />
           </button>
         </div>
+
+        <ShareSheet open={shareOpen} onClose={() => setShareOpen(false)} />
       </div>
     </MobileLayout>
   );

@@ -20,7 +20,7 @@ const ObservationMapPage = () => {
         <PageHeader
           title="观察地图"
           transparent
-          rightAction={
+          right={
             <button className="btn-tap min-w-[44px] min-h-[44px] flex items-center justify-center">
               <SlidersHorizontal size={20} className="text-foreground" />
             </button>
