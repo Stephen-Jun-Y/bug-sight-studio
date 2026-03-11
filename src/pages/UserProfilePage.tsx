@@ -19,10 +19,6 @@ const UserProfilePage = () => {
         <div className="px-5 text-center">
           <div className="w-20 h-20 rounded-full bg-primary/10 mx-auto flex items-center justify-center text-[40px]">🧑‍🔬</div>
           <h2 className="text-[20px] font-bold text-foreground mt-3">昆虫猎人</h2>
-          <div className="flex items-center justify-center gap-4 mt-2 text-caption text-muted-foreground">
-            <span><strong className="text-foreground">256</strong> 关注</span>
-            <span><strong className="text-foreground">1.2k</strong> 粉丝</span>
-          </div>
           <button className="mt-3 h-9 px-6 bg-primary text-primary-foreground rounded-full text-caption font-semibold btn-tap">关注</button>
         </div>
 
