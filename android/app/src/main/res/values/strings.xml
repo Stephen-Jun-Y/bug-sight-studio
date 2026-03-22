@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">BugSight</string>
+    <string name="title_activity_main">BugSight</string>
+    <string name="package_name">com.bugsight.app</string>
+    <string name="custom_url_scheme">com.bugsight.app</string>
+</resources>

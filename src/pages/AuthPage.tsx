@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Eye, EyeOff } from "lucide-react";
 import MobileLayout from "@/components/MobileLayout";
+import { useI18n } from "@/lib/language";
 import { login, register } from "@/services/auth-service";
 import { saveAuth } from "@/lib/auth";
 
@@ -16,18 +17,19 @@ const AuthPage = () => {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
+  const { t } = useI18n();
 
   const handleSubmit = async () => {
     if (submitting) return;
     setError("");
 
     if (!email || !password) {
-      setError("请填写邮箱和密码");
+      setError(t("请填写邮箱和密码", "Please enter your email and password."));
       return;
     }
 
     if (!isLogin && (!nickname || !agreePolicy)) {
-      setError("注册需要填写昵称并同意协议");
+      setError(t("注册需要填写昵称并同意协议", "Sign-up requires a nickname and agreement to the terms."));
       return;
     }
 
@@ -40,7 +42,7 @@ const AuthPage = () => {
       saveAuth(payload);
       navigate("/home");
     } catch (e) {
-      setError(e instanceof Error ? e.message : "请求失败");
+      setError(e instanceof Error ? e.message : t("请求失败", "Request failed"));
     } finally {
       setSubmitting(false);
     }
@@ -48,13 +50,13 @@ const AuthPage = () => {
 
   return (
     <MobileLayout>
-      <div className="pt-20 px-6 pb-8 h-full flex flex-col bg-card">
+      <div className="h-full overflow-y-auto hide-scrollbar bg-card safe-top-offset px-6 pb-safe-sheet flex flex-col">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-8">
           <div className="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center mx-auto mb-4">
             <span className="text-[32px]">🦋</span>
           </div>
-          <h1 className="text-title text-foreground">昆虫识别</h1>
-          <p className="text-caption text-secondary-60 mt-1">探索自然，认识昆虫</p>
+          <h1 className="text-title text-foreground">{t("昆虫识别", "BugSight")}</h1>
+          <p className="text-caption text-secondary-60 mt-1">{t("探索自然，认识昆虫", "Explore nature and identify insects")}</p>
         </motion.div>
 
         <div className="relative bg-secondary rounded-md p-1 flex mb-8">
@@ -63,7 +65,10 @@ const AuthPage = () => {
             animate={{ x: isLogin ? 0 : "calc(100% + 4px)" }}
             transition={{ type: "spring", damping: 20, stiffness: 300 }}
           />
-          {["登录", "注册"].map((label, i) => (
+          {[
+            t("登录", "Sign in"),
+            t("注册", "Sign up"),
+          ].map((label, i) => (
             <button
               key={label}
               className={`relative z-10 flex-1 py-2 text-btn transition-colors ${
@@ -82,7 +87,7 @@ const AuthPage = () => {
               type="text"
               value={nickname}
               onChange={e => setNickname(e.target.value)}
-              placeholder="昵称"
+              placeholder={t("昵称", "Nickname")}
               className="w-full h-[50px] bg-secondary rounded-md px-4 text-body text-foreground placeholder:text-muted-foreground outline-none focus:focus-glow transition-shadow"
             />
           )}
@@ -90,7 +95,7 @@ const AuthPage = () => {
             type="email"
             value={email}
             onChange={e => setEmail(e.target.value)}
-            placeholder="邮箱"
+            placeholder={t("邮箱", "Email")}
             className="w-full h-[50px] bg-secondary rounded-md px-4 text-body text-foreground placeholder:text-muted-foreground outline-none focus:focus-glow transition-shadow"
           />
           <div className="relative">
@@ -98,7 +103,7 @@ const AuthPage = () => {
               type={showPwd ? "text" : "password"}
               value={password}
               onChange={e => setPassword(e.target.value)}
-              placeholder="密码"
+              placeholder={t("密码", "Password")}
               className="w-full h-[50px] bg-secondary rounded-md px-4 pr-12 text-body text-foreground placeholder:text-muted-foreground outline-none focus:focus-glow transition-shadow"
             />
             <button onClick={() => setShowPwd(!showPwd)} className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground">
@@ -106,12 +111,12 @@ const AuthPage = () => {
             </button>
           </div>
 
-          {isLogin && <button className="text-caption text-primary self-end block ml-auto">忘记密码？</button>}
+          {isLogin && <button className="text-caption text-primary self-end block ml-auto">{t("忘记密码？", "Forgot password?")}</button>}
 
           {!isLogin && (
             <label className="flex items-start gap-2 text-small text-muted-foreground">
               <input type="checkbox" checked={agreePolicy} onChange={e => setAgreePolicy(e.target.checked)} className="mt-0.5 accent-primary" />
-              <span>我已阅读并同意《用户协议》和《隐私政策》</span>
+              <span>{t("我已阅读并同意《用户协议》和《隐私政策》", "I have read and agree to the User Agreement and Privacy Policy")}</span>
             </label>
           )}
 
@@ -122,7 +127,7 @@ const AuthPage = () => {
             disabled={submitting}
             className="w-full h-[50px] bg-primary text-primary-foreground rounded-lg text-btn btn-tap mt-4 disabled:opacity-50"
           >
-            {submitting ? "提交中..." : isLogin ? "登录" : "注册"}
+            {submitting ? t("提交中...", "Submitting...") : isLogin ? t("登录", "Sign in") : t("注册", "Sign up")}
           </button>
         </motion.div>
       </div>

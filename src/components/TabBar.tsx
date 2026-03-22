@@ -1,21 +1,23 @@
 import { Home, Camera, Clock, User, MessageCircle } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
-
-const tabs = [
-  { icon: Home, label: "首页", path: "/home" },
-  { icon: MessageCircle, label: "社区", path: "/community" },
-  { icon: Camera, label: "识别", path: "/scan", center: true },
-  { icon: Clock, label: "记录", path: "/history" },
-  { icon: User, label: "我的", path: "/profile" },
-];
+import { useI18n } from "@/lib/language";
 
 const TabBar = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { t } = useI18n();
+
+  const tabs = [
+    { icon: Home, label: t("首页", "Home"), path: "/home" },
+    { icon: MessageCircle, label: t("社区", "Community"), path: "/community" },
+    { icon: Camera, label: t("识别", "Scan"), path: "/scan", center: true },
+    { icon: Clock, label: t("记录", "History"), path: "/history" },
+    { icon: User, label: t("我的", "Me"), path: "/profile" },
+  ];
 
   return (
-    <div className="absolute bottom-0 left-0 right-0 glass z-40">
-      <div className="flex items-center justify-around pb-6 pt-2">
+    <div className="absolute bottom-0 left-0 right-0 z-40 safe-bottom">
+      <div className="glass flex items-center justify-around pb-safe-tab pt-2">
         {tabs.map(({ icon: Icon, label, path, center }) => {
           const active = location.pathname === path;
           if (center) {

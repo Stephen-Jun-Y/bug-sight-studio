@@ -1,30 +1,35 @@
 import { motion } from "framer-motion";
 import MobileLayout from "@/components/MobileLayout";
 import PageHeader from "@/components/PageHeader";
-
-const badges = [
-  { name: "初次识别", icon: "🔍", unlocked: true, date: "2024-01-15", desc: "完成第一次识别" },
-  { name: "昆虫达人", icon: "🏆", unlocked: true, date: "2024-02-20", desc: "识别50种昆虫" },
-  { name: "摄影师", icon: "📷", unlocked: true, date: "2024-03-01", desc: "上传100张照片" },
-  { name: "探索者", icon: "🗺️", unlocked: true, date: "2024-03-05", desc: "在10个不同地点识别" },
-  { name: "收藏家", icon: "⭐", unlocked: true, date: "2024-03-08", desc: "收藏30种昆虫" },
-  { name: "社区之星", icon: "💬", unlocked: true, date: "2024-03-09", desc: "获得100个点赞" },
-  { name: "连续打卡", icon: "🔥", unlocked: true, date: "2024-03-10", desc: "连续7天识别" },
-  { name: "百科全书", icon: "📖", unlocked: true, date: "2024-03-10", desc: "阅读50篇百科" },
-  { name: "鳞翅目专家", icon: "🦋", unlocked: false, desc: "识别所有蝴蝶种类" },
-  { name: "夜行观察", icon: "🌙", unlocked: false, desc: "在夜间识别10种昆虫" },
-  { name: "全国旅行", icon: "✈️", unlocked: false, desc: "在30个省份识别" },
-  { name: "传说猎人", icon: "👑", unlocked: false, desc: "识别1000种昆虫" },
-];
+import { useI18n } from "@/lib/language";
 
 const AchievementsPage = () => {
+  const { t } = useI18n();
+
+  const badges = [
+    { name: t("初次识别", "First scan"), icon: "🔍", unlocked: true, date: "2024-01-15", desc: t("完成第一次识别", "Complete your first recognition") },
+    { name: t("昆虫达人", "Insect expert"), icon: "🏆", unlocked: true, date: "2024-02-20", desc: t("识别50种昆虫", "Recognize 50 insect species") },
+    { name: t("摄影师", "Photographer"), icon: "📷", unlocked: true, date: "2024-03-01", desc: t("上传100张照片", "Upload 100 photos") },
+    { name: t("探索者", "Explorer"), icon: "🗺️", unlocked: true, date: "2024-03-05", desc: t("在10个不同地点识别", "Scan in 10 different locations") },
+    { name: t("收藏家", "Collector"), icon: "⭐", unlocked: true, date: "2024-03-08", desc: t("收藏30种昆虫", "Favorite 30 species") },
+    { name: t("社区之星", "Community star"), icon: "💬", unlocked: true, date: "2024-03-09", desc: t("获得100个点赞", "Receive 100 likes") },
+    { name: t("连续打卡", "Streak keeper"), icon: "🔥", unlocked: true, date: "2024-03-10", desc: t("连续7天识别", "Scan for 7 days in a row") },
+    { name: t("百科全书", "Wiki reader"), icon: "📖", unlocked: true, date: "2024-03-10", desc: t("阅读50篇百科", "Read 50 species profiles") },
+    { name: t("鳞翅目专家", "Lepidoptera expert"), icon: "🦋", unlocked: false, desc: t("识别所有蝴蝶种类", "Recognize every butterfly type") },
+    { name: t("夜行观察", "Night observer"), icon: "🌙", unlocked: false, desc: t("在夜间识别10种昆虫", "Recognize 10 insects at night") },
+    { name: t("全国旅行", "Nationwide traveler"), icon: "✈️", unlocked: false, desc: t("在30个省份识别", "Scan insects in 30 provinces") },
+    { name: t("传说猎人", "Legend hunter"), icon: "👑", unlocked: false, desc: t("识别1000种昆虫", "Recognize 1000 insect species") },
+  ];
+
   const unlocked = badges.filter(b => b.unlocked).length;
   return (
     <MobileLayout>
-      <div className="h-full bg-background pb-8">
-        <PageHeader title="成就徽章" />
+      <div className="h-full bg-background pb-safe-sheet">
+        <PageHeader title={t("成就徽章", "Achievements")} />
         <div className="px-5 mt-2">
-          <p className="text-caption text-muted-foreground mb-2">已解锁 {unlocked}/{badges.length} 个徽章</p>
+          <p className="text-caption text-muted-foreground mb-2">
+            {languageText(t, `已解锁 ${unlocked}/${badges.length} 个徽章`, `${unlocked}/${badges.length} badges unlocked`)}
+          </p>
           <div className="h-2 bg-secondary rounded-full overflow-hidden mb-6">
             <motion.div
               className="h-full bg-primary rounded-full"
@@ -55,5 +60,7 @@ const AchievementsPage = () => {
     </MobileLayout>
   );
 };
+
+const languageText = (t: (cn: string, en?: string) => string, cn: string, en: string) => t(cn, en);
 
 export default AchievementsPage;

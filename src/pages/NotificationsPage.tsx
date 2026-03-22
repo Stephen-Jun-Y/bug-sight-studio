@@ -3,31 +3,33 @@ import { motion } from "framer-motion";
 import { Heart, MessageCircle, UserPlus, Bell as BellIcon } from "lucide-react";
 import MobileLayout from "@/components/MobileLayout";
 import PageHeader from "@/components/PageHeader";
-
-const tabs = ["全部", "互动", "系统"];
-const notifications = [
-  { icon: Heart, color: "text-destructive", title: "昆虫猎人 赞了你的动态", time: "2分钟前", unread: true },
-  { icon: MessageCircle, color: "text-primary", title: "花园守护者 评论了你的照片", time: "30分钟前", unread: true },
-  { icon: UserPlus, color: "text-warning", title: "微距摄影师 关注了你", time: "1小时前", unread: true },
-  { icon: BellIcon, color: "text-muted-foreground", title: "你的识别记录已达到100条！", time: "昨天", unread: false },
-  { icon: BellIcon, color: "text-muted-foreground", title: "系统维护通知：3月15日凌晨2:00-4:00", time: "3天前", unread: false },
-];
+import { useI18n } from "@/lib/language";
 
 const NotificationsPage = () => {
   const [activeTab, setActiveTab] = useState(0);
+  const { t } = useI18n();
+
+  const tabs = [t("全部", "All"), t("互动", "Activity"), t("系统", "System")];
+  const notifications = [
+    { icon: Heart, color: "text-destructive", title: t("昆虫猎人 赞了你的动态", "Insect hunter liked your post"), time: t("2分钟前", "2m ago"), unread: true },
+    { icon: MessageCircle, color: "text-primary", title: t("花园守护者 评论了你的照片", "Garden keeper commented on your photo"), time: t("30分钟前", "30m ago"), unread: true },
+    { icon: UserPlus, color: "text-warning", title: t("微距摄影师 关注了你", "Macro photographer followed you"), time: t("1小时前", "1h ago"), unread: true },
+    { icon: BellIcon, color: "text-muted-foreground", title: t("你的识别记录已达到100条！", "Your recognition history reached 100 records!"), time: t("昨天", "Yesterday"), unread: false },
+    { icon: BellIcon, color: "text-muted-foreground", title: t("系统维护通知：3月15日凌晨2:00-4:00", "Maintenance notice: Mar 15, 2:00-4:00 AM"), time: t("3天前", "3 days ago"), unread: false },
+  ];
 
   return (
     <MobileLayout>
-      <div className="h-full bg-background pb-8 overflow-y-auto hide-scrollbar">
-        <PageHeader title="消息通知" showBack />
+      <div className="h-full bg-background pb-safe-sheet overflow-y-auto hide-scrollbar">
+        <PageHeader title={t("消息通知", "Notifications")} showBack />
         <div className="flex gap-4 px-5 border-b border-border">
-          {tabs.map((t, i) => (
+          {tabs.map((tab, i) => (
             <button
-              key={t}
+              key={tab}
               onClick={() => setActiveTab(i)}
               className={`pb-2 text-body relative ${i === activeTab ? "text-foreground font-bold" : "text-muted-foreground"}`}
             >
-              {t}
+              {tab}
               {i === activeTab && (
                 <motion.div layoutId="notif-tab" className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full" />
               )}

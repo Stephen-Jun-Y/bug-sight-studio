@@ -12,7 +12,7 @@ interface PageHeaderProps {
 const PageHeader = ({ title, showBack = true, right, transparent = false }: PageHeaderProps) => {
   const navigate = useNavigate();
   return (
-    <div className={`flex items-center justify-between px-4 pt-14 pb-2 ${transparent ? "" : "bg-card"}`}>
+    <div className={`safe-top-offset flex min-h-[72px] items-center justify-between px-4 pb-2 ${transparent ? "" : "bg-card"}`}>
       <div className="w-10">
         {showBack && (
           <button onClick={() => navigate(-1)} className="btn-tap min-w-[44px] min-h-[44px] flex items-center justify-center -ml-2">

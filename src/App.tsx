@@ -3,6 +3,7 @@ import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { LanguageProvider } from "@/lib/language";
 
 import OnboardingPage from "./pages/OnboardingPage";
 import AuthPage from "./pages/AuthPage";
@@ -39,45 +40,47 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Navigate to="/onboarding" replace />} />
-          <Route path="/onboarding" element={<OnboardingPage />} />
-          <Route path="/auth" element={<AuthPage />} />
-          <Route path="/home" element={<HomePage />} />
-          <Route path="/scan" element={<ScanPage />} />
-          <Route path="/result" element={<ResultPage />} />
-          <Route path="/history" element={<HistoryPage />} />
-          <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/edit-profile" element={<EditProfilePage />} />
-          <Route path="/favorites" element={<FavoritesPage />} />
-          <Route path="/achievements" element={<AchievementsPage />} />
-          <Route path="/observation-map" element={<ObservationMapPage />} />
-          <Route path="/settings" element={<SettingsPage />} />
-          <Route path="/help" element={<HelpPage />} />
-          <Route path="/similar-species" element={<SimilarSpeciesPage />} />
-          <Route path="/species-wiki" element={<SpeciesWikiPage />} />
-          <Route path="/record-detail" element={<RecordDetailPage />} />
-          <Route path="/edit-record" element={<EditRecordPage />} />
-          <Route path="/search" element={<SearchPage />} />
-          <Route path="/search-filter" element={<SearchFilterPage />} />
-          <Route path="/community" element={<CommunityPage />} />
-          <Route path="/publish" element={<PublishPage />} />
-          <Route path="/post-detail" element={<PostDetailPage />} />
-          <Route path="/user-profile" element={<UserProfilePage />} />
-          <Route path="/notifications" element={<NotificationsPage />} />
-          <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
-          <Route path="/user-agreement" element={<UserAgreementPage />} />
-          <Route path="/data-export" element={<DataExportPage />} />
-          <Route path="/change-password" element={<ChangePasswordPage />} />
-          <Route path="/bind-phone" element={<BindPhonePage />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
+    <LanguageProvider>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Navigate to="/onboarding" replace />} />
+            <Route path="/onboarding" element={<OnboardingPage />} />
+            <Route path="/auth" element={<AuthPage />} />
+            <Route path="/home" element={<HomePage />} />
+            <Route path="/scan" element={<ScanPage />} />
+            <Route path="/result" element={<ResultPage />} />
+            <Route path="/history" element={<HistoryPage />} />
+            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/edit-profile" element={<EditProfilePage />} />
+            <Route path="/favorites" element={<FavoritesPage />} />
+            <Route path="/achievements" element={<AchievementsPage />} />
+            <Route path="/observation-map" element={<ObservationMapPage />} />
+            <Route path="/settings" element={<SettingsPage />} />
+            <Route path="/help" element={<HelpPage />} />
+            <Route path="/similar-species" element={<SimilarSpeciesPage />} />
+            <Route path="/species-wiki" element={<SpeciesWikiPage />} />
+            <Route path="/record-detail" element={<RecordDetailPage />} />
+            <Route path="/edit-record" element={<EditRecordPage />} />
+            <Route path="/search" element={<SearchPage />} />
+            <Route path="/search-filter" element={<SearchFilterPage />} />
+            <Route path="/community" element={<CommunityPage />} />
+            <Route path="/publish" element={<PublishPage />} />
+            <Route path="/post-detail" element={<PostDetailPage />} />
+            <Route path="/user-profile/:userId" element={<UserProfilePage />} />
+            <Route path="/notifications" element={<NotificationsPage />} />
+            <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
+            <Route path="/user-agreement" element={<UserAgreementPage />} />
+            <Route path="/data-export" element={<DataExportPage />} />
+            <Route path="/change-password" element={<ChangePasswordPage />} />
+            <Route path="/bind-phone" element={<BindPhonePage />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </LanguageProvider>
   </QueryClientProvider>
 );
 

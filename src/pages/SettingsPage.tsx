@@ -3,45 +3,70 @@ import { ChevronRight } from "lucide-react";
 import { useState } from "react";
 import MobileLayout from "@/components/MobileLayout";
 import PageHeader from "@/components/PageHeader";
+import { toast } from "@/components/ui/sonner";
+import { clearAuth } from "@/lib/auth";
+import { LANGUAGE_STORAGE_KEY, useI18n } from "@/lib/language";
+import { deleteCurrentUser } from "@/services/user-service";
 
 const SettingsPage = () => {
   const navigate = useNavigate();
   const [notifications, setNotifications] = useState(true);
+  const { language, setLanguage, t } = useI18n();
 
   const groups = [
     {
-      title: "账号安全",
+      title: t("账号安全", "Account Security"),
       items: [
-        { label: "修改密码", action: "nav" as const, path: "/change-password" },
-        { label: "绑定手机", value: "138****1234", action: "nav" as const, path: "/bind-phone" },
+        { label: t("修改密码", "Change password"), action: "nav" as const, path: "/change-password" },
+        { label: t("绑定手机", "Bind phone"), value: "138****1234", action: "nav" as const, path: "/bind-phone" },
       ],
     },
     {
-      title: "通知设置",
+      title: t("通用设置", "General"),
       items: [
-        { label: "推送通知", action: "toggle" as const, checked: notifications, onChange: () => setNotifications(!notifications) },
+        { label: t("语言", "Language"), action: "language" as const },
+        { label: t("推送通知", "Push notifications"), action: "toggle" as const, checked: notifications, onChange: () => setNotifications(!notifications) },
       ],
     },
     {
-      title: "隐私设置",
+      title: t("隐私设置", "Privacy"),
       items: [
-        { label: "隐私政策", action: "nav" as const, path: "/privacy-policy" },
-        { label: "数据导出", action: "nav" as const, path: "/data-export" },
+        { label: t("隐私政策", "Privacy policy"), action: "nav" as const, path: "/privacy-policy" },
+        { label: t("数据导出", "Data export"), action: "nav" as const, path: "/data-export" },
       ],
     },
     {
-      title: "关于",
+      title: t("关于", "About"),
       items: [
-        { label: "版本号", value: "v2.1.0", action: "none" as const },
-        { label: "用户协议", action: "nav" as const, path: "/user-agreement" },
+        { label: t("版本号", "Version"), value: "v2.1.0", action: "none" as const },
+        { label: t("用户协议", "User agreement"), action: "nav" as const, path: "/user-agreement" },
       ],
     },
   ];
 
+  const handleDeleteAccount = async () => {
+    if (!window.confirm(t("确定要注销账号吗？此操作无法撤销。", "Delete your account? This cannot be undone."))) {
+      return;
+    }
+
+    try {
+      await deleteCurrentUser();
+      clearAuth();
+      navigate("/auth", { replace: true });
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : t("注销账号失败，请稍后重试", "Failed to delete account. Please try again."));
+    }
+  };
+
+  const handleClearCache = () => {
+    window.localStorage.removeItem(LANGUAGE_STORAGE_KEY);
+    toast.success(t("已清除本地缓存", "Local cache cleared"));
+  };
+
   return (
     <MobileLayout>
-      <div className="h-full bg-background pb-8 overflow-y-auto hide-scrollbar">
-        <PageHeader title="设置" />
+      <div className="h-full bg-background pb-safe-sheet overflow-y-auto hide-scrollbar">
+        <PageHeader title={t("设置", "Settings")} />
         {groups.map((group, gi) => (
           <div key={gi} className="px-5 mt-4">
             <p className="text-small text-muted-foreground mb-2 uppercase tracking-wider">{group.title}</p>
@@ -62,10 +87,30 @@ const SettingsPage = () => {
                   {item.action === "toggle" && (
                     <button
                       onClick={item.onChange}
+                      aria-label={item.label}
                       className={`w-[51px] h-[31px] rounded-full transition-colors ${item.checked ? "bg-primary" : "bg-muted"} relative`}
                     >
                       <div className={`w-[27px] h-[27px] bg-card rounded-full absolute top-[2px] transition-transform ${item.checked ? "translate-x-[22px]" : "translate-x-[2px]"} card-shadow`} />
                     </button>
+                  )}
+                  {item.action === "language" && (
+                    <div className="inline-flex items-center rounded-full bg-secondary p-1 card-shadow micro-border">
+                      {[
+                        { value: "zh-CN" as const, label: "中文" },
+                        { value: "en-US" as const, label: "English" },
+                      ].map(option => {
+                        const active = language === option.value;
+                        return (
+                          <button
+                            key={option.value}
+                            onClick={() => setLanguage(option.value)}
+                            className={`min-w-[72px] h-8 rounded-full px-3 text-small font-semibold transition-colors btn-tap ${active ? "bg-card text-foreground" : "text-muted-foreground"}`}
+                          >
+                            {option.label}
+                          </button>
+                        );
+                      })}
+                    </div>
                   )}
                   {item.action === "none" && <span className="text-small text-muted-foreground">{item.value}</span>}
                 </div>
@@ -73,10 +118,9 @@ const SettingsPage = () => {
             </div>
           </div>
         ))}
-        {/* Danger zone */}
         <div className="px-5 mt-6 space-y-3">
-          <button className="w-full text-center py-3 text-body text-destructive btn-tap">清除缓存</button>
-          <button className="w-full text-center py-3 text-body text-destructive btn-tap">注销账号</button>
+          <button onClick={handleClearCache} className="w-full text-center py-3 text-body text-destructive btn-tap">{t("清除缓存", "Clear cache")}</button>
+          <button onClick={handleDeleteAccount} className="w-full text-center py-3 text-body text-destructive btn-tap">{t("注销账号", "Delete account")}</button>
         </div>
       </div>
     </MobileLayout>

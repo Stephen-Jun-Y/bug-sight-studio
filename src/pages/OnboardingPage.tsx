@@ -5,16 +5,18 @@ import MobileLayout from "@/components/MobileLayout";
 import onboarding1 from "@/assets/onboarding-1.jpg";
 import onboarding2 from "@/assets/onboarding-2.jpg";
 import onboarding3 from "@/assets/onboarding-3.jpg";
-
-const slides = [
-  { img: onboarding1, title: "探索昆虫世界", desc: "用手机相机即刻识别身边的昆虫，开启自然探索之旅" },
-  { img: onboarding2, title: "AI 智能识别", desc: "基于深度学习的识别引擎，覆盖 10,000+ 昆虫物种" },
-  { img: onboarding3, title: "记录与分享", desc: "建立你的昆虫图鉴，与全球自然爱好者交流" },
-];
+import { useI18n } from "@/lib/language";
 
 const OnboardingPage = () => {
   const [current, setCurrent] = useState(0);
   const navigate = useNavigate();
+  const { t } = useI18n();
+
+  const slides = [
+    { img: onboarding1, title: t("探索昆虫世界", "Explore the insect world"), desc: t("用手机相机即刻识别身边的昆虫，开启自然探索之旅", "Use your phone camera to identify insects around you and begin exploring nature.") },
+    { img: onboarding2, title: t("AI 智能识别", "AI-powered recognition"), desc: t("基于深度学习的识别引擎，覆盖 10,000+ 昆虫物种", "A deep-learning engine designed to recognize more than 10,000 insect species.") },
+    { img: onboarding3, title: t("记录与分享", "Record and share"), desc: t("建立你的昆虫图鉴，与全球自然爱好者交流", "Build your own insect field guide and connect with nature lovers around the world.") },
+  ];
 
   const next = () => {
     if (current < 2) setCurrent(current + 1);
@@ -23,7 +25,7 @@ const OnboardingPage = () => {
 
   return (
     <MobileLayout>
-      <div className="relative h-full">
+      <div className="relative h-full min-h-full overflow-hidden bg-background">
         <AnimatePresence mode="wait">
           <motion.div
             key={current}
@@ -37,19 +39,16 @@ const OnboardingPage = () => {
           </motion.div>
         </AnimatePresence>
 
-        {/* Gradient overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
 
-        {/* Skip button */}
         <button
           onClick={() => navigate("/auth")}
-          className="absolute top-14 right-5 z-10 text-caption font-normal text-primary-foreground/70 btn-tap"
+          className="safe-top-anchor absolute right-5 z-10 text-caption font-normal text-primary-foreground/70 btn-tap"
         >
-          跳过
+          {t("跳过", "Skip")}
         </button>
 
-        {/* Content */}
-        <div className="absolute bottom-0 left-0 right-0 px-8 pb-12 z-10">
+        <div className="absolute bottom-0 left-0 right-0 px-8 pb-safe-sheet z-10">
           <AnimatePresence mode="wait">
             <motion.div
               key={current}
@@ -63,7 +62,6 @@ const OnboardingPage = () => {
             </motion.div>
           </AnimatePresence>
 
-          {/* Dots + Button */}
           <div className="flex items-center justify-between">
             <div className="flex gap-2">
               {[0, 1, 2].map(i => (
@@ -79,7 +77,7 @@ const OnboardingPage = () => {
               onClick={next}
               className="bg-primary text-primary-foreground px-8 py-3 rounded-lg text-btn btn-tap"
             >
-              {current === 2 ? "开始探索" : "下一步"}
+              {current === 2 ? t("开始探索", "Get started") : t("下一步", "Next")}
             </button>
           </div>
         </div>
