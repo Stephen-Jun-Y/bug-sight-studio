@@ -2,9 +2,11 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { X, Clock, Search as SearchIcon, SlidersHorizontal } from "lucide-react";
 import MobileLayout from "@/components/MobileLayout";
+import { getStoredUser } from "@/lib/auth";
 import { useI18n } from "@/lib/language";
-import { searchSpecies } from "@/services/species-service";
-import type { InsectInfo } from "@/types/api";
+import { clearSearchHistory, listSearchHistory, saveSearchHistoryItem } from "@/lib/search-history";
+import { getHotSearches, searchSpecies } from "@/services/species-service";
+import type { HotSearchItem, InsectInfo } from "@/types/api";
 
 const parseHarmLevel = (value: string | null) => {
   if (!value) return undefined;
@@ -16,9 +18,12 @@ const SearchPage = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [results, setResults] = useState<InsectInfo[]>([]);
+  const [hotSearches, setHotSearches] = useState<HotSearchItem[]>([]);
+  const [historyItems, setHistoryItems] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const { language, t } = useI18n();
+  const currentUser = getStoredUser();
 
   const query = searchParams.get("q") ?? "";
   const harmLevel = parseHarmLevel(searchParams.get("harmLevel"));
@@ -34,6 +39,30 @@ const SearchPage = () => {
     }
     setSearchParams(next, { replace: true });
   };
+
+  useEffect(() => {
+    setHistoryItems(listSearchHistory(currentUser?.id));
+  }, [currentUser?.id]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    getHotSearches(8)
+      .then((items) => {
+        if (!cancelled) {
+          setHotSearches(items);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setHotSearches([]);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     if (!keyword && harmLevel === undefined) {
@@ -56,6 +85,9 @@ const SearchPage = () => {
       .then((data) => {
         if (cancelled) return;
         setResults(data.list);
+        if (keyword) {
+          setHistoryItems(saveSearchHistoryItem(keyword, currentUser?.id));
+        }
       })
       .catch((err: unknown) => {
         if (cancelled) return;
@@ -71,10 +103,7 @@ const SearchPage = () => {
     return () => {
       cancelled = true;
     };
-  }, [harmLevel, keyword, t]);
-
-  const hotTags = [t("蝴蝶", "Butterfly"), t("甲虫", "Beetle"), t("蜻蜓", "Dragonfly"), t("螳螂", "Mantis"), t("蜜蜂", "Bee"), t("蚂蚁", "Ant"), t("蝉", "Cicada"), t("萤火虫", "Firefly")];
-  const historyItems = [t("帝王蝶", "Monarch butterfly"), t("中华螳螂", "Chinese mantis"), t("七星瓢虫", "Seven-spotted ladybird")];
+  }, [currentUser?.id, harmLevel, keyword, t]);
 
   const renderMeta = (item: InsectInfo) => {
     if (language === "en-US") {
@@ -94,6 +123,11 @@ const SearchPage = () => {
     const next = new URLSearchParams(searchParams);
     next.delete("harmLevel");
     setSearchParams(next, { replace: true });
+  };
+
+  const handleClearHistory = () => {
+    clearSearchHistory(currentUser?.id);
+    setHistoryItems([]);
   };
 
   return (
@@ -119,16 +153,16 @@ const SearchPage = () => {
           <div className="px-5 mt-6">
             <h3 className="text-subtitle text-foreground mb-3">{t("热门搜索", "Trending searches")}</h3>
             <div className="flex flex-wrap gap-2 mb-6">
-              {hotTags.map(tag => (
-                <button key={tag} onClick={() => updateQuery(tag)} className="px-4 py-2 border border-primary/30 text-primary rounded-full text-caption btn-tap">
-                  {tag}
+              {hotSearches.map(item => (
+                <button key={item.keyword} onClick={() => updateQuery(item.keyword)} className="px-4 py-2 border border-primary/30 text-primary rounded-full text-caption btn-tap">
+                  {item.keyword}
                 </button>
               ))}
             </div>
 
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-subtitle text-foreground">{t("搜索历史", "Search history")}</h3>
-              <button className="text-small text-muted-foreground">{t("清除", "Clear")}</button>
+              <button onClick={handleClearHistory} className="text-small text-muted-foreground">{t("清除", "Clear")}</button>
             </div>
             {historyItems.map(item => (
               <button key={item} onClick={() => updateQuery(item)} className="w-full flex items-center gap-3 py-3 border-b border-border tap-scale">

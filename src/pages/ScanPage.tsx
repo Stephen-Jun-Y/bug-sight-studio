@@ -1,6 +1,7 @@
-import { type ChangeEvent, useRef, useState } from "react";
+import { type ChangeEvent, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
+import { Camera, CameraResultType, CameraSource } from "@capacitor/camera";
 import { Image, RotateCcw, X, Zap } from "lucide-react";
 import MobileLayout from "@/components/MobileLayout";
 import insectBee from "@/assets/insect-bee.jpg";
@@ -21,13 +22,180 @@ const ScanPage = () => {
   const [previewUrl, setPreviewUrl] = useState("");
   const inputRef = useRef<HTMLInputElement | null>(null);
   const activeScanRef = useRef(0);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const captureCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const [isStartingLiveCamera, setIsStartingLiveCamera] = useState(true);
+  const [liveCameraError, setLiveCameraError] = useState("");
+  const [hasLiveCameraStream, setHasLiveCameraStream] = useState(false);
+
+  const updateSelectedImage = (file: File, nextPreviewUrl: string) => {
+    if (previewUrl.startsWith("blob:")) {
+      URL.revokeObjectURL(previewUrl);
+    }
+
+    setSelectedFile(file);
+    setPreviewUrl(nextPreviewUrl);
+    setProgress(0);
+    setState("preview");
+
+    if (inputRef.current) {
+      inputRef.current.value = "";
+    }
+  };
 
   const openPicker = () => {
     inputRef.current?.click();
   };
 
-  const handleCapture = () => {
-    openPicker();
+  const stopLiveCamera = () => {
+    streamRef.current?.getTracks().forEach((track) => track.stop());
+    streamRef.current = null;
+    setHasLiveCameraStream(false);
+    if (videoRef.current) {
+      videoRef.current.srcObject = null;
+    }
+  };
+
+  useEffect(() => {
+    if (state !== "camera") {
+      stopLiveCamera();
+      setIsStartingLiveCamera(false);
+      return;
+    }
+
+    let active = true;
+
+    const startLiveCamera = async () => {
+      if (!navigator.mediaDevices?.getUserMedia) {
+        setLiveCameraError(t("当前设备不支持实时取景，将回退到系统相机", "Live preview is not supported on this device. Falling back to the system camera."));
+        setIsStartingLiveCamera(false);
+        return;
+      }
+
+      setIsStartingLiveCamera(true);
+      setLiveCameraError("");
+
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            facingMode: { ideal: "environment" },
+          },
+          audio: false,
+        });
+
+        if (!active) {
+          stream.getTracks().forEach((track) => track.stop());
+          return;
+        }
+
+        streamRef.current = stream;
+        setHasLiveCameraStream(true);
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+          await videoRef.current.play().catch(() => undefined);
+        }
+      } catch (error) {
+        if (!active) return;
+        const message = error instanceof Error ? error.message : "";
+        if (/denied|permission|notallowed/i.test(message)) {
+          setLiveCameraError(t("未获得相机权限，将回退到系统相机", "Camera permission was denied. Falling back to the system camera."));
+        } else {
+          setLiveCameraError(t("实时取景启动失败，将回退到系统相机", "Failed to start live preview. Falling back to the system camera."));
+        }
+      } finally {
+        if (active) {
+          setIsStartingLiveCamera(false);
+        }
+      }
+    };
+
+    startLiveCamera();
+
+    return () => {
+      active = false;
+      stopLiveCamera();
+    };
+  }, [state, t]);
+
+  useEffect(() => {
+    if (!hasLiveCameraStream || !videoRef.current || !streamRef.current) {
+      return;
+    }
+
+    videoRef.current.srcObject = streamRef.current;
+    videoRef.current.play().catch(() => undefined);
+  }, [hasLiveCameraStream]);
+
+  const captureWithNativeCamera = async () => {
+    try {
+      const photo = await Camera.getPhoto({
+        quality: 90,
+        allowEditing: false,
+        resultType: CameraResultType.Uri,
+        source: CameraSource.Camera,
+      });
+
+      if (!photo.webPath) {
+        openPicker();
+        return;
+      }
+
+      const response = await fetch(photo.webPath);
+      if (!response.ok) {
+        throw new Error("Failed to read captured image");
+      }
+
+      const blob = await response.blob();
+      const extension = photo.format || blob.type.split("/")[1] || "jpeg";
+      const type = blob.type || `image/${extension}`;
+      const file = new File([blob], `capture-${Date.now()}.${extension}`, { type });
+      const nextPreviewUrl = URL.createObjectURL(file);
+      updateSelectedImage(file, nextPreviewUrl);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "";
+      if (/cancel/i.test(message)) {
+        return;
+      }
+
+      openPicker();
+    }
+  };
+
+  const handleCapture = async () => {
+    if (!streamRef.current || !videoRef.current) {
+      await captureWithNativeCamera();
+      return;
+    }
+
+    const canvas = captureCanvasRef.current ?? document.createElement("canvas");
+    captureCanvasRef.current = canvas;
+    const video = videoRef.current;
+    const width = video.videoWidth || 1080;
+    const height = video.videoHeight || 1440;
+    canvas.width = width;
+    canvas.height = height;
+
+    const context = canvas.getContext("2d");
+    if (!context) {
+      await captureWithNativeCamera();
+      return;
+    }
+
+    context.drawImage(video, 0, 0, width, height);
+
+    const blob = await new Promise<Blob | null>((resolve) => {
+      canvas.toBlob((nextBlob) => resolve(nextBlob), "image/jpeg", 0.92);
+    });
+
+    if (!blob) {
+      await captureWithNativeCamera();
+      return;
+    }
+
+    const file = new File([blob], `capture-${Date.now()}.jpg`, { type: "image/jpeg" });
+    const nextPreviewUrl = URL.createObjectURL(file);
+    updateSelectedImage(file, nextPreviewUrl);
   };
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -39,14 +207,7 @@ const ScanPage = () => {
       return;
     }
 
-    if (previewUrl.startsWith("blob:")) {
-      URL.revokeObjectURL(previewUrl);
-    }
-
-    setSelectedFile(file);
-    setPreviewUrl(URL.createObjectURL(file));
-    setProgress(0);
-    setState("preview");
+    updateSelectedImage(file, URL.createObjectURL(file));
   };
 
   const handleRetake = () => {
@@ -117,7 +278,23 @@ const ScanPage = () => {
     <MobileLayout>
       <div className="relative h-full min-h-full overflow-hidden bg-foreground">
         {state === "camera" && (
-          <div className="absolute inset-0 bg-gradient-to-b from-foreground/90 to-foreground" />
+          <>
+            <div className="absolute inset-0 bg-black">
+              {hasLiveCameraStream ? (
+                <video
+                  ref={videoRef}
+                  autoPlay
+                  muted
+                  playsInline
+                  className="w-full h-full object-cover"
+                  aria-label={t("实时取景画面", "Live camera preview")}
+                />
+              ) : (
+                <div className="absolute inset-0 bg-gradient-to-b from-foreground/90 to-foreground" />
+              )}
+            </div>
+            <div className="absolute inset-0 bg-gradient-to-b from-foreground/30 via-transparent to-foreground/40" />
+          </>
         )}
 
         {(state === "preview" || state === "scanning") && (
@@ -126,12 +303,19 @@ const ScanPage = () => {
           </div>
         )}
 
-        <button onClick={() => navigate(-1)} className="safe-top-anchor absolute left-5 z-20 btn-tap min-w-[44px] min-h-[44px] flex items-center justify-center">
+        <button
+          onClick={() => navigate(-1)}
+          aria-label={t("关闭扫描页", "Close scan")}
+          className="safe-top-anchor absolute left-5 z-20 btn-tap min-w-[44px] min-h-[44px] flex items-center justify-center"
+        >
           <X size={24} className="text-primary-foreground" />
         </button>
 
         {state === "camera" && (
-          <button className="safe-top-anchor absolute right-5 z-20 btn-tap min-w-[44px] min-h-[44px] flex items-center justify-center">
+          <button
+            aria-label={t("闪光灯", "Flash")}
+            className="safe-top-anchor absolute right-5 z-20 btn-tap min-w-[44px] min-h-[44px] flex items-center justify-center"
+          >
             <Zap size={22} className="text-primary-foreground" />
           </button>
         )}
@@ -149,12 +333,24 @@ const ScanPage = () => {
                   <div key={i} className={`absolute w-8 h-8 border-primary-foreground ${cls}`} />
                 ))}
               </div>
-              <p className="absolute mt-60 text-caption text-primary-foreground/60">{t("将昆虫置于取景框内", "Place the insect inside the frame")}</p>
+              <div className="absolute mt-60 text-center px-6">
+                <p className="text-caption text-primary-foreground/70">{t("将昆虫置于取景框内", "Place the insect inside the frame")}</p>
+                {isStartingLiveCamera && (
+                  <p className="mt-2 text-small text-primary-foreground/60">{t("正在启动实时取景...", "Starting live preview...")}</p>
+                )}
+                {!isStartingLiveCamera && liveCameraError && (
+                  <p className="mt-2 text-small text-primary-foreground/60">{liveCameraError}</p>
+                )}
+              </div>
             </div>
 
             <div className="absolute bottom-0 left-0 right-0 glass-dark pb-safe-sheet pt-4">
               <div className="flex items-center justify-around px-8">
-                <button onClick={openPicker} className="btn-tap min-w-[44px] min-h-[44px] flex items-center justify-center">
+                <button
+                  onClick={openPicker}
+                  aria-label={t("从相册选择", "Choose from gallery")}
+                  className="btn-tap min-w-[44px] min-h-[44px] flex items-center justify-center"
+                >
                   <input
                     ref={inputRef}
                     type="file"
@@ -166,11 +362,16 @@ const ScanPage = () => {
                 </button>
                 <button
                   onClick={handleCapture}
+                  aria-label={t("拍照识别", "Take photo")}
                   className="w-[72px] h-[72px] rounded-full border-4 border-primary-foreground/80 flex items-center justify-center btn-tap"
                 >
                   <div className="w-[58px] h-[58px] rounded-full bg-primary-foreground/90" />
                 </button>
-                <button onClick={openPicker} className="btn-tap min-w-[44px] min-h-[44px] flex items-center justify-center">
+                <button
+                  onClick={openPicker}
+                  aria-label={t("重新选择图片", "Choose another image")}
+                  className="btn-tap min-w-[44px] min-h-[44px] flex items-center justify-center"
+                >
                   <RotateCcw size={24} className="text-primary-foreground" />
                 </button>
               </div>

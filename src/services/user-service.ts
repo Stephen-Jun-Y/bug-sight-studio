@@ -1,5 +1,6 @@
 import { request, withPagination } from "@/lib/api-client";
 import type {
+  AchievementProgress,
   ChangeCurrentUserPasswordRequest,
   CurrentUserProfile,
   FollowStatusResponse,
@@ -11,6 +12,8 @@ import type {
 } from "@/types/api";
 
 export const getCurrentUserProfile = () => request<CurrentUserProfile>("/users/me");
+
+export const getMyAchievements = () => request<AchievementProgress>("/users/me/achievements");
 
 export const updateCurrentUserProfile = (payload: UpdateCurrentUserProfileRequest) =>
   request<CurrentUserProfile>("/users/me", {

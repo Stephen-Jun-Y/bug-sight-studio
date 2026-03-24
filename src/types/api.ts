@@ -55,6 +55,29 @@ export interface CurrentUserProfile {
   location?: string;
 }
 
+export interface HomeRecentItem {
+  id: string;
+  imageUrl: string;
+  speciesNameCn: string;
+  speciesNameEn: string;
+  capturedLabelCn: string;
+  capturedLabelEn: string;
+}
+
+export interface HomePopularItem {
+  id: string;
+  imageUrl: string;
+  speciesNameCn: string;
+  speciesNameEn: string;
+  recognitionLabelCn: string;
+  recognitionLabelEn: string;
+}
+
+export interface HomeFeedData {
+  recentItems: HomeRecentItem[];
+  popularItems: HomePopularItem[];
+}
+
 export interface PublicUserProfile {
   id: number;
   nickname: string;
@@ -87,6 +110,25 @@ export interface ChangeCurrentUserPasswordRequest {
   newPassword: string;
 }
 
+export interface AchievementItem {
+  id: number;
+  name: string;
+  description: string;
+  icon: string;
+  conditionType: string;
+  targetValue: number;
+  currentValue: number;
+  progressPercent: number;
+  unlocked: boolean;
+  unlockedAt?: string | null;
+}
+
+export interface AchievementProgress {
+  unlockedCount: number;
+  totalCount: number;
+  items: AchievementItem[];
+}
+
 export interface RecognitionSpecies {
   id: number;
   name: string;
@@ -101,13 +143,14 @@ export interface SimilarSpeciesScore {
 
 export interface RecognitionResult {
   recognitionId: number;
-  species: RecognitionSpecies;
+  species: RecognitionSpecies | null;
   confidence: number;
   similar: SimilarSpeciesScore[];
   imageUrl: string;
   note?: string | null;
   location?: string | null;
   capturedAt: string;
+  isUnknown?: boolean;
 }
 
 export interface LocalizedText {
@@ -133,6 +176,11 @@ export interface SpeciesSearchParams {
   page?: number;
   pageSize?: number;
   harmLevel?: number;
+}
+
+export interface HotSearchItem {
+  keyword: string;
+  count: number;
 }
 
 export interface FavoriteStatusResponse {

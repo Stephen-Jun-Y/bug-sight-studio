@@ -3,6 +3,7 @@ import { Edit3, Trash2, Share2, MapPin } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import MobileLayout from "@/components/MobileLayout";
 import PageHeader from "@/components/PageHeader";
+import RemoteImage from "@/components/RemoteImage";
 import { toast } from "@/components/ui/sonner";
 import insectMantis from "@/assets/insect-mantis.jpg";
 import { useI18n } from "@/lib/language";
@@ -79,7 +80,12 @@ const RecordDetailPage = () => {
   }
 
   const record = detail;
-  const speciesName = language === "en-US" ? record?.species.latinName : record?.species.name;
+  const isUnknown = Boolean(record?.isUnknown || !record?.species);
+  const speciesName = isUnknown
+    ? t("未识别到昆虫", "No insect detected")
+    : language === "en-US"
+      ? record?.species?.latinName
+      : record?.species?.name;
   const note = record?.note || t("暂无备注", "No notes yet");
   const locationName = record?.location || t("未记录地点", "No location recorded");
   const confidence = record ? `${(record.confidence * 100).toFixed(1)}%` : "--";
@@ -106,7 +112,12 @@ const RecordDetailPage = () => {
     <MobileLayout>
       <div className="relative h-full overflow-y-auto hide-scrollbar bg-background pb-safe-page">
         <div className="relative h-[280px]">
-          <img src={imageSrc} alt={speciesName || "record"} className="w-full h-full object-cover" />
+          <RemoteImage
+            src={imageSrc}
+            fallbackSrc={insectMantis}
+            alt={speciesName || "record"}
+            className="w-full h-full object-cover"
+          />
           <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
           <div className="absolute top-0 left-0 right-0">
             <PageHeader title="" transparent />
@@ -114,9 +125,9 @@ const RecordDetailPage = () => {
         </div>
 
         <div className="px-5 -mt-8 relative z-10">
-          <div className="bg-card rounded-2xl p-4 card-shadow micro-border">
-            <h2 className="text-title text-foreground">{speciesName || t("加载中...", "Loading...")}</h2>
-            <p className="text-caption text-muted-foreground italic">{record?.species.latinName || "-"}</p>
+            <div className="bg-card rounded-2xl p-4 card-shadow micro-border">
+              <h2 className="text-title text-foreground">{speciesName || t("加载中...", "Loading...")}</h2>
+            <p className="text-caption text-muted-foreground italic">{isUnknown ? "-" : record?.species?.latinName || "-"}</p>
             <div className="mt-4 space-y-3 text-caption">
               <div className="flex justify-between gap-4">
                 <span className="text-muted-foreground">{t("识别时间", "Captured at")}</span>

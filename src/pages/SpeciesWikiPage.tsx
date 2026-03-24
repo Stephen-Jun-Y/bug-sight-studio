@@ -53,9 +53,9 @@ const SpeciesWikiPage = () => {
   const { language, t } = useI18n();
   const recognition = useCurrentRecognition();
   const locationState = (location.state ?? {}) as SpeciesWikiLocationState;
-  const speciesId = recognition?.species.id ?? locationState.speciesId;
-  const fallbackName = recognition?.species.name ?? t("物种详情", "Species profile");
-  const fallbackLatinName = recognition?.species.latinName ?? t("待补充", "To be added");
+  const speciesId = recognition?.species?.id ?? locationState.speciesId;
+  const fallbackName = recognition?.species?.name ?? t("物种详情", "Species profile");
+  const fallbackLatinName = recognition?.species?.latinName ?? t("待补充", "To be added");
   const [detail, setDetail] = useState<InsectInfo | null>(() => (
     speciesId !== undefined ? buildFallbackDetail(speciesId, fallbackName, fallbackLatinName) : null
   ));

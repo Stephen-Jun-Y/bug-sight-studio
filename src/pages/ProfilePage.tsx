@@ -49,7 +49,9 @@ const ProfilePage = () => {
     const days = new Set<string>();
 
     history.forEach(record => {
-      speciesIds.add(record.species.id);
+      if (record.species?.id !== undefined) {
+        speciesIds.add(record.species.id);
+      }
 
       const location = record.location?.trim();
       if (location) {
@@ -69,10 +71,12 @@ const ProfilePage = () => {
     ];
   }, [history, t]);
 
+  const speciesCount = stats[0]?.value ?? "0";
+
   const menuGroups = [
     [
-      { icon: Heart, label: t("我的收藏", "Favorites"), path: "/favorites", count: "32" },
-      { icon: Award, label: t("成就徽章", "Achievements"), path: "/achievements", count: "8/24" },
+      { icon: Heart, label: t("我的收藏", "Favorites"), path: "/favorites" },
+      { icon: Award, label: t("成就徽章", "Achievements"), path: "/achievements" },
       { icon: MapPin, label: t("观察地图", "Observation map"), path: "/observation-map" },
     ],
     [
@@ -97,7 +101,9 @@ const ProfilePage = () => {
               <div className="w-full h-full bg-primary/20 flex items-center justify-center text-[36px]">🦋</div>
             </div>
             <h2 className="text-[20px] font-bold text-foreground mt-3">{profile?.nickname || t("自然探索者", "Nature explorer")}</h2>
-            <p className="text-caption text-tertiary-40 mt-1">{t("已识别 128 种昆虫", "128 insects identified")}</p>
+            <p className="text-caption text-tertiary-40 mt-1">
+              {t(`已识别 ${speciesCount} 种昆虫`, `${speciesCount} insects identified`)}
+            </p>
             <button
               onClick={() => navigate("/edit-profile")}
               className="mt-3 text-caption text-primary flex items-center gap-1 mx-auto"
@@ -125,7 +131,7 @@ const ProfilePage = () => {
         {menuGroups.map((group, gi) => (
           <div key={gi} className="px-5 mt-4">
             <div className="bg-card rounded-xl card-shadow micro-border overflow-hidden">
-              {group.map(({ icon: Icon, label, path, count }, i) => (
+              {group.map(({ icon: Icon, label, path }, i) => (
                 <button
                   key={i}
                   onClick={() => navigate(path)}
@@ -133,7 +139,6 @@ const ProfilePage = () => {
                 >
                   <Icon size={20} className="text-primary" />
                   <span className="flex-1 text-body text-foreground text-left">{label}</span>
-                  {count && <span className="text-small text-muted-foreground">{count}</span>}
                   <ChevronRight size={18} className="text-muted-foreground" />
                 </button>
               ))}

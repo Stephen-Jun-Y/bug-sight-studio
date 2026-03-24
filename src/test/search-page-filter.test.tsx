@@ -6,9 +6,11 @@ import { LanguageProvider } from "@/lib/language";
 import SearchPage from "@/pages/SearchPage";
 
 const searchSpecies = vi.fn();
+const getHotSearches = vi.fn();
 
 vi.mock("@/services/species-service", () => ({
   searchSpecies: (...args: unknown[]) => searchSpecies(...args),
+  getHotSearches: (...args: unknown[]) => getHotSearches(...args),
 }));
 
 vi.mock("@/components/MobileLayout", () => ({
@@ -18,6 +20,7 @@ vi.mock("@/components/MobileLayout", () => ({
 describe("SearchPage filters", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    getHotSearches.mockResolvedValue([]);
     searchSpecies.mockResolvedValue({ list: [], total: 0, page: 1, size: 20 });
   });
 

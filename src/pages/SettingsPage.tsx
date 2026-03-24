@@ -1,6 +1,5 @@
 import { useNavigate } from "react-router-dom";
 import { ChevronRight } from "lucide-react";
-import { useState } from "react";
 import MobileLayout from "@/components/MobileLayout";
 import PageHeader from "@/components/PageHeader";
 import { toast } from "@/components/ui/sonner";
@@ -10,7 +9,6 @@ import { deleteCurrentUser } from "@/services/user-service";
 
 const SettingsPage = () => {
   const navigate = useNavigate();
-  const [notifications, setNotifications] = useState(true);
   const { language, setLanguage, t } = useI18n();
 
   const groups = [
@@ -25,7 +23,6 @@ const SettingsPage = () => {
       title: t("通用设置", "General"),
       items: [
         { label: t("语言", "Language"), action: "language" as const },
-        { label: t("推送通知", "Push notifications"), action: "toggle" as const, checked: notifications, onChange: () => setNotifications(!notifications) },
       ],
     },
     {

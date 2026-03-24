@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Search, ChevronRight } from "lucide-react";
 import MobileLayout from "@/components/MobileLayout";
+import RemoteImage from "@/components/RemoteImage";
 import TabBar from "@/components/TabBar";
 import { toast } from "@/components/ui/sonner";
 import insectMantis from "@/assets/insect-mantis.jpg";
@@ -161,7 +162,11 @@ const HistoryPage = () => {
             <p className="px-5 text-caption text-muted-foreground font-semibold mb-2">{group.label}</p>
             <div className="px-5 space-y-2">
               {group.items.map((item, i) => {
-                const speciesName = language === "en-US" ? item.species.latinName : item.species.name;
+                const speciesName = item.isUnknown
+                  ? t("未识别到昆虫", "No insect detected")
+                  : language === "en-US"
+                    ? item.species?.latinName ?? t("待补充", "To be added")
+                    : item.species?.name ?? t("待补充", "To be added");
                 const location = item.location || t("未记录地点", "No location recorded");
                 const confidence = `${(item.confidence * 100).toFixed(1)}%`;
                 const imageSrc = resolveSpeciesCover({
@@ -197,7 +202,12 @@ const HistoryPage = () => {
                         className="h-4 w-4 accent-primary"
                       />
                     )}
-                    <img src={imageSrc} alt={speciesName} className="w-[60px] h-[60px] rounded-sm object-cover flex-shrink-0" />
+                    <RemoteImage
+                      src={imageSrc}
+                      fallbackSrc={insectMantis}
+                      alt={speciesName}
+                      className="w-[60px] h-[60px] rounded-sm object-cover flex-shrink-0"
+                    />
                     <div className="flex-1 text-left min-w-0">
                       <p className="text-body text-foreground font-bold truncate">{speciesName}</p>
                       <p className="text-small text-tertiary-40 truncate">{buildTimeLabel(item.capturedAt)} · {location}</p>

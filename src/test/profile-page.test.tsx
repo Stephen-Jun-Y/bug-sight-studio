@@ -100,10 +100,13 @@ describe("ProfilePage", () => {
     await waitFor(() => expect(getCurrentUserProfileMock).toHaveBeenCalled());
     await waitFor(() => expect(listRecognitionHistoryMock).toHaveBeenCalledWith({ page: 1, pageSize: 100 }));
     await waitFor(() => expect(screen.getByText("后端昵称")).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText("已识别 2 种昆虫")).toBeInTheDocument());
 
     expect(within(screen.getByText("物种").parentElement as HTMLElement).getByText("2")).toBeInTheDocument();
     expect(within(screen.getByText("地点").parentElement as HTMLElement).getByText("2")).toBeInTheDocument();
     expect(within(screen.getByText("天数").parentElement as HTMLElement).getByText("2")).toBeInTheDocument();
+    expect(screen.queryByText("32")).not.toBeInTheDocument();
+    expect(screen.queryByText("8/24")).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "退出登录" }));
 

@@ -22,7 +22,7 @@ const localizedOrFallback = (value: LocalizedText, cnFallback = "待补充", enF
 const SimilarSpeciesPage = () => {
   const { language, t } = useI18n();
   const recognition = useCurrentRecognition();
-  const speciesId = recognition?.species.id;
+  const speciesId = recognition?.species?.id;
   const [species, setSpecies] = useState<InsectInfo[]>([]);
 
   useEffect(() => {

@@ -103,4 +103,15 @@ describe("SettingsPage account actions", () => {
     expect(clearAuthMock).not.toHaveBeenCalled();
     expect(toastSuccessMock).toHaveBeenCalled();
   });
+
+  it("does not render the removed push notifications setting", () => {
+    render(
+      <LanguageProvider>
+        <SettingsPage />
+      </LanguageProvider>,
+    );
+
+    expect(screen.queryByText("推送通知")).not.toBeInTheDocument();
+    expect(screen.queryByText("Push notifications")).not.toBeInTheDocument();
+  });
 });

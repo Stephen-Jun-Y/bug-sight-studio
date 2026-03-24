@@ -28,7 +28,6 @@ import CommunityPage from "./pages/CommunityPage";
 import PublishPage from "./pages/PublishPage";
 import PostDetailPage from "./pages/PostDetailPage";
 import UserProfilePage from "./pages/UserProfilePage";
-import NotificationsPage from "./pages/NotificationsPage";
 import PrivacyPolicyPage from "./pages/PrivacyPolicyPage";
 import UserAgreementPage from "./pages/UserAgreementPage";
 import DataExportPage from "./pages/DataExportPage";
@@ -70,7 +69,6 @@ const App = () => (
             <Route path="/publish" element={<PublishPage />} />
             <Route path="/post-detail" element={<PostDetailPage />} />
             <Route path="/user-profile/:userId" element={<UserProfilePage />} />
-            <Route path="/notifications" element={<NotificationsPage />} />
             <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
             <Route path="/user-agreement" element={<UserAgreementPage />} />
             <Route path="/data-export" element={<DataExportPage />} />

@@ -16,8 +16,8 @@ const TabBar = () => {
   ];
 
   return (
-    <div className="absolute bottom-0 left-0 right-0 z-40 safe-bottom">
-      <div className="glass flex items-center justify-around pb-safe-tab pt-2">
+    <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-border bg-background pb-safe-tab shadow-[0_-8px_24px_rgba(0,0,0,0.06)]">
+      <div className="flex items-center justify-around px-2 pt-2">
         {tabs.map(({ icon: Icon, label, path, center }) => {
           const active = location.pathname === path;
           if (center) {
